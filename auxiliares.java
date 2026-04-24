@@ -77,4 +77,4 @@ public class auxiliares {
             }
         }
         throw new IllegalArgumentException("El determinante no tiene inverso. Esta matriz no sirve como clave.");
-}
+}}
