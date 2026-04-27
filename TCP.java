@@ -3,8 +3,9 @@ import java.net.*;
 import java.util.*;
 
 public class TCP {
-    // inteligenci artificial ayudo con esta parte ya que no lograbamos sacar la IP de la computadora solo 
-    // se lograba sacar el loclahost
+
+    // ==================== UTILIDADES ====================
+
     private static String obtenerIPReal() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -18,20 +19,25 @@ public class TCP {
                         return addr.getHostAddress();
                 }
             }
-        } catch (SocketException e) { System.out.println("No se pudo detectar la IP."); }
+        } catch (SocketException e) {
+            System.out.println("No se pudo detectar la IP.");
+        }
         return "No encontrada";
     }
-    // usamos para obtener la matriz momentaneo (despues al integrase al frame se quitara )
-    private static int[] pedirClave(Scanner teclado) {
+
+    private static Matriz pedirClave(Scanner teclado) {
         System.out.println("\n--- Ingresa la clave de la matriz 2x2 ---");
         System.out.println("(Ambos lados deben usar los mismos valores)");
-        int[] clave = new int[4];
-        String[] nombres = {"a (fila 1, col 1)", "b (fila 1, col 2)", "c (fila 2, col 1)", "d (fila 2, col 2)"};
-        for (int i = 0; i < 4; i++) {
-            System.out.print("  " + nombres[i] + ": ");
-            clave[i] = Integer.parseInt(teclado.nextLine().trim());
-        }
-        return clave;
+        System.out.print("  a (fila 1, col 1): "); int a = Integer.parseInt(teclado.nextLine().trim());
+        System.out.print("  b (fila 1, col 2): "); int b = Integer.parseInt(teclado.nextLine().trim());
+        System.out.print("  c (fila 2, col 1): "); int c = Integer.parseInt(teclado.nextLine().trim());
+        System.out.print("  d (fila 2, col 2): "); int d = Integer.parseInt(teclado.nextLine().trim());
+
+        Matriz m = new Matriz(a, b, c, d);
+        m.generarMatriz();
+        m.crearAlfabeto();
+        m.crearAlfabetoInverso();
+        return m;
     }
 
     private static Socket establecerConexion(Scanner teclado, int puerto) throws IOException {
@@ -40,7 +46,7 @@ public class TCP {
 
         if (opcion == 1) {
             System.out.println("Tu IP es: " + obtenerIPReal());
-            System.out.println("Esperando conexión en puerto " + puerto + "...");
+            System.out.println("Esperando conexion en puerto " + puerto + "...");
             ServerSocket serverSocket = new ServerSocket(puerto);
             Socket s = serverSocket.accept();
             serverSocket.close();
@@ -58,9 +64,7 @@ public class TCP {
     // ==================== MODO 1: Recibir un mensaje ====================
     private static void modoRecibirMensaje(Scanner teclado, int puerto) throws IOException {
         System.out.println("\n=== MODO: RECIBIR MENSAJE CIFRADO ===");
-        int[] clave = pedirClave(teclado);
-        int[][] matrizClave = new Matriz(clave[0], clave[1], clave[2], clave[3]).generarMatriz();
-        Matriz m = new Matriz(clave[0], clave[1], clave[2], clave[3]);
+        Matriz m = pedirClave(teclado);
 
         Socket socket = establecerConexion(teclado, puerto);
         BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
@@ -68,9 +72,7 @@ public class TCP {
         System.out.println("\nEsperando mensaje...");
         String mensajeCifrado = entrada.readLine();
         System.out.println("Mensaje cifrado  : " + mensajeCifrado);
-
-        String mensajeClaro = m.decodificar(mensajeCifrado, matrizClave);
-        System.out.println("Mensaje original : " + (mensajeClaro != null ? mensajeClaro.trim() : "Error al descifrar"));
+        System.out.println("Mensaje original : " + m.decodificar(mensajeCifrado, m.matriz).trim());
 
         socket.close();
     }
@@ -78,16 +80,14 @@ public class TCP {
     // ==================== MODO 2: Enviar un mensaje ====================
     private static void modoEnviarMensaje(Scanner teclado, int puerto) throws IOException {
         System.out.println("\n=== MODO: ENVIAR MENSAJE CIFRADO ===");
-        int[] clave = pedirClave(teclado);
-        int[][] matrizClave = new Matriz(clave[0], clave[1], clave[2], clave[3]).generarMatriz();
-        Matriz m = new Matriz(clave[0], clave[1], clave[2], clave[3]);
+        Matriz m = pedirClave(teclado);
 
         Socket socket = establecerConexion(teclado, puerto);
         PrintWriter salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
 
-        System.out.print("\nEscribe el mensaje (letras A-Z, Ñ, espacios o puntos): ");
+        System.out.print("\nEscribe el mensaje (letras A-Z, espacios o puntos): ");
         String mensaje = teclado.nextLine();
-        String cifrado = m.codificar(mensaje, matrizClave);
+        String cifrado = m.codificar(mensaje, m.matriz);
 
         if (cifrado == null) {
             System.out.println("Error al cifrar. Verifica que el mensaje no tenga caracteres especiales.");
@@ -102,13 +102,11 @@ public class TCP {
     // ==================== MODO 3: Chat cifrado ====================
     private static void modoChat(Scanner teclado, int puerto) throws IOException {
         System.out.println("\n=== MODO: CHAT CIFRADO ===");
-        int[] clave = pedirClave(teclado);
-        int[][] matrizClave = new Matriz(clave[0], clave[1], clave[2], clave[3]).generarMatriz();
-        Matriz m = new Matriz(clave[0], clave[1], clave[2], clave[3]);
+        Matriz m = pedirClave(teclado);
 
-        // Validar que la clave sea invertible antes de conectar
+        // Validar que la clave tenga inverso antes de conectar
         try {
-            m.inversoModular(m.determinante(matrizClave));
+            m.inversoModular(m.determinante(m.matriz));
         } catch (IllegalArgumentException e) {
             System.out.println("Error con la clave: " + e.getMessage());
             return;
@@ -119,40 +117,40 @@ public class TCP {
         final PrintWriter salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
         final Socket socketFinal = socket;
 
-        // Hilo receptor: muestra cifrado y descifrado
+        // Hilo receptor: descifra cada mensaje al llegar
         Thread hiloEscucha = new Thread(() -> {
             try {
                 String mensajeCifrado;
                 while ((mensajeCifrado = entrada.readLine()) != null) {
-                    String claro = m.decodificar(mensajeCifrado, matrizClave);
+                    String claro = m.decodificar(mensajeCifrado, m.matriz);
                     System.out.println("\r[Amigo cifrado] " + mensajeCifrado);
                     System.out.println(" [Amigo claro ] " + (claro != null ? claro.trim() : "(error al descifrar)"));
-                    System.out.print("[Tú]: ");
+                    System.out.print("[Tu]: ");
                     System.out.flush();
                 }
             } catch (IOException e) {
-                if (!socketFinal.isClosed()) System.out.println("\nConexión perdida.");
+                if (!socketFinal.isClosed()) System.out.println("\nConexion perdida.");
             }
         });
         hiloEscucha.setDaemon(true);
         hiloEscucha.start();
 
         System.out.println("Chat listo. Escribe 'salir' para terminar.");
-        System.out.println("Nota: usa solo letras A-Z, Ñ, espacios o puntos.\n");
+        System.out.println("Nota: usa solo letras A-Z, espacios o puntos.\n");
 
         while (true) {
-            System.out.print("[Tú]: ");
+            System.out.print("[Tu]: ");
             String mensaje = teclado.nextLine();
             if (mensaje.equalsIgnoreCase("salir")) break;
             if (mensaje.trim().isEmpty()) continue;
 
-            String cifrado = m.codificar(mensaje, matrizClave);
+            String cifrado = m.codificar(mensaje, m.matriz);
             if (cifrado == null) {
                 System.out.println("  No se pudo cifrar. Revisa los caracteres del mensaje.");
                 continue;
             }
             salida.println(cifrado);
-            if (salida.checkError()) { System.out.println("Error al enviar. Conexión caída."); break; }
+            if (salida.checkError()) { System.out.println("Error al enviar. Conexion caida."); break; }
         }
 
         socket.close();
@@ -164,12 +162,12 @@ public class TCP {
         int PUERTO = 9999;
 
         System.out.println("================================");
-        System.out.println("          CHAT CIFRADO  ");
+        System.out.println("   CHAT CIFRADO - HILL CIPHER  ");
         System.out.println("================================");
         System.out.println("1. Recibir un mensaje cifrado");
         System.out.println("2. Enviar un mensaje cifrado");
         System.out.println("3. Chat completo (cifrado ida y vuelta)");
-        System.out.print("Opción: ");
+        System.out.print("Opcion: ");
 
         try {
             int modo = Integer.parseInt(teclado.nextLine().trim());
@@ -177,12 +175,12 @@ public class TCP {
                 case 1 -> modoRecibirMensaje(teclado, PUERTO);
                 case 2 -> modoEnviarMensaje(teclado, PUERTO);
                 case 3 -> modoChat(teclado, PUERTO);
-                default -> System.out.println("Opción inválida. Elige 1, 2 o 3.");
+                default -> System.out.println("Opcion invalida. Elige 1, 2 o 3.");
             }
         } catch (NumberFormatException e) {
-            System.out.println("Escribe solo el número de la opción.");
+            System.out.println("Escribe solo el numero de la opcion.");
         } catch (ConnectException e) {
-            System.out.println("No se pudo conectar. Verifica la IP y que el otro lado esté esperando.");
+            System.out.println("No se pudo conectar. Verifica la IP y que el otro lado este esperando.");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();

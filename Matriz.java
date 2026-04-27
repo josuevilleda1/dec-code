@@ -14,10 +14,10 @@ public class Matriz{
     HashMap<Integer, Character> alfabetoInverso;
 
     public Matriz(int a, int b, int c, int d){
-        this.a = a;
-        this.b = b;
-        this.c = c;
-        this.d = d;
+        this.a = calculadoraModular(a);
+        this.b = calculadoraModular(b);
+        this.c = calculadoraModular(c);
+        this.d = calculadoraModular(d);
         matriz = new int[2][2];
         alfabeto = new HashMap<>();
         alfabetoInverso = new HashMap<>();

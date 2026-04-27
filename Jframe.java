@@ -8,7 +8,11 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 public class Jframe{
-    public static void main(String args[]){
+    public int calculadoraModular2 (int x) {
+        return (x % 29 + 29) % 29;
+
+    }
+        public static void main(String args[]){
         cuadro1();
     }
 
@@ -45,6 +49,9 @@ public class Jframe{
             //Para controlarlo, se verifica antes de crear el objeto matriz. 
             if(a.matches("\\d+")& b.matches("\\d+")& c.matches("\\d+")& d.matches("\\d+")){
                 Matriz m = new Matriz(Integer.parseInt(a),Integer.parseInt(b),Integer.parseInt(c),Integer.parseInt(d));
+                for(Matriz n : m){
+                    
+                }
                 cuadro2(m);
                 inicio.dispose();
                 }
