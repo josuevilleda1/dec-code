@@ -1,12 +1,12 @@
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import java.awt.Dimension;
+import java.awt.Color;
 import java.awt.Font;
-import javax.swing.JTextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JButton;
-import java.util.Arrays;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 public class Jframe{
     public static void main(String args[]){
         cuadro1();
@@ -18,7 +18,7 @@ public class Jframe{
         //Pedir matriz
         JLabel txt1 = new JLabel("BIENVENID@");
         txt1.setBounds(415, 50, 500, 60);
-        txt1.setFont(new Font("Arial", Font.BOLD, 50));
+        txt1.setFont(new Font("Century Gothic", Font.BOLD, 50));
         inicio.add(txt1);
 
         JLabel txt2 = new JLabel("Ingrese matriz");
@@ -46,6 +46,7 @@ public class Jframe{
             if(a.matches("\\d+")& b.matches("\\d+")& c.matches("\\d+")& d.matches("\\d+")){
                 Matriz m = new Matriz(Integer.parseInt(a),Integer.parseInt(b),Integer.parseInt(c),Integer.parseInt(d));
                 cuadro2(m);
+                inicio.dispose();
                 }
             else{cuadroError();}
         });
@@ -59,6 +60,7 @@ public class Jframe{
         inicio.setLayout(null);
         inicio.setSize(1200,550);
         inicio.setLocationRelativeTo(null);
+        inicio.getContentPane().setBackground(new Color(245, 245,220));
         inicio.setVisible(true);
         inicio.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -73,16 +75,139 @@ public class Jframe{
         error.setLayout(null);
         error.setSize(200,200);
         error.setLocationRelativeTo(null);
+        error.getContentPane().setBackground(new Color(255, 253,230));
         error.setVisible(true);
     }
 
     public static void cuadro2(Matriz m){
-        JFrame cuadro2 = new JFrame("Cuadro2");
+        m.generarMatriz();
+        m.crearAlfabeto();
+        m.crearAlfabetoInverso();
+
+        try {
+            int det = m.determinante(m.matriz);
+            m.inversoModular(det);
+        } catch (IllegalArgumentException ex) {
+            cuadroError();
+            return;
+        }
+        JFrame cuadro2 = new JFrame("Opciones de la matriz");
         //Antes de llamar a las funciones de codificar, decodificar y mostrar matriz inversa como la matriz original
         //verificar que la matriz no sea nula, si es nula, mandar a ventana error. 
         cuadro2.setLayout(null);
-        cuadro2.setSize(200,200);
+        cuadro2.setSize(600,450);
         cuadro2.setLocationRelativeTo(null);
+        cuadro2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JLabel titulo = new JLabel(" Menú de operaciones", SwingConstants.CENTER);
+        titulo.setFont(new Font("Century Gothic", Font.BOLD, 24));
+        titulo.setBounds(50, 20, 500, 40);
+        cuadro2.add(titulo);
+
+        JLabel lblInput = new JLabel("ingrese texto");
+        lblInput.setBounds(50, 80, 500, 30);
+        cuadro2.add(lblInput);
+
+        JTextField inputTexto = new JTextField();
+        inputTexto.setBounds(50, 110, 500, 30);
+        cuadro2.add(inputTexto);
+
+        JButton btnCodificador = new JButton("Codificador");
+        btnCodificador.setBounds(50, 160, 220, 30);
+        cuadro2.add(btnCodificador);
+
+        JButton btnDecodificador = new JButton("Decodificador");
+        btnDecodificador.setBounds(330, 160, 220, 30);
+        cuadro2.add(btnDecodificador);
+
+        JButton btnDeterminate = new JButton("Ver Determinante");
+        btnDeterminate.setBounds(50, 210, 220, 30);
+        cuadro2.add(btnDeterminate);
+
+        JButton btnInversa = new JButton("ver la matriz inversa");
+        btnInversa.setBounds(330, 210, 220, 30);
+        cuadro2.add(btnInversa);
+
+        JLabel lblResultados = new JLabel("Resultados");
+        lblResultados.setBounds(50, 270, 500, 30);
+        cuadro2.add(lblResultados);
+
+        JTextField txtResultados = new JTextField();
+        txtResultados.setBounds(50, 300, 500, 40);
+        txtResultados.setFont(new Font("Century Gothic", Font.BOLD, 14));
+        txtResultados.setEditable(false);
+        cuadro2.add(txtResultados);
+
+        JButton btnRecargar = new JButton("Recargar");
+        btnRecargar.setBounds(200, 360, 200, 30);
+        cuadro2.add(btnRecargar);
+
+        JButton btnVolver = new JButton("Volver");
+        btnVolver.setBounds(200, 390, 200, 30);
+        cuadro2.add(btnVolver);
+
+        btnCodificador.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String texto = inputTexto.getText();
+                String res = m.codificar(texto, m.matriz);
+                if (res == null || res.isEmpty()) {
+                    txtResultados.setText("Error!!!: usa letras del alfabeto");
+                } else {
+                    txtResultados.setText(res);
+                }
+            }
+        });
+
+        btnDecodificador.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String texto = inputTexto.getText();
+                try {
+                    String res = m.decodificar(texto, m.matriz);
+                    txtResultados.setText(res);
+                } catch (Exception ex) {
+                    txtResultados.setText("Error al decodificar! vuelve a intetarlo");
+                }
+            }
+        });
+
+        btnDeterminate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int det = m.determinante(m.matriz);
+                txtResultados.setText("el determinante es:" + det);
+            }
+        });
+
+        btnInversa.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int [][] inv = m.MatrizInversa(m.matriz);
+                String matrizString = String.format("[ %d, %d ] [ %d. %d ]", inv[0][0], inv[0][1], inv[1][0], inv[1][1]);
+                txtResultados.setText("Matriz Inversa es;" + matrizString);
+            }
+        });
+
+        btnRecargar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                inputTexto.setText("");
+                txtResultados.setText( "");
+            }
+        });
+
+        btnVolver.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cuadro1();
+                cuadro2.dispose();
+            }
+        });
+
+        cuadro2.getContentPane().setBackground(new Color(255, 253, 230));
+
         cuadro2.setVisible(true);
+
     }
 }
