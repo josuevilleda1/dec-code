@@ -4,8 +4,6 @@ import java.util.*;
 
 public class TCP {
 
-    // ==================== UTILIDADES ====================
-
     private static String obtenerIPReal() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -25,7 +23,7 @@ public class TCP {
         return "No encontrada";
     }
 
-    private static Matriz pedirClave(Scanner teclado) {
+    private static Matriz pedirClave(Scanner tecJlado) {
         System.out.println("\n--- Ingresa la clave de la matriz 2x2 ---");
         System.out.println("(Ambos lados deben usar los mismos valores)");
         System.out.print("  a (fila 1, col 1): "); int a = Integer.parseInt(teclado.nextLine().trim());
