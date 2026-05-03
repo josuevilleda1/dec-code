@@ -40,23 +40,18 @@ public class Jframe{
         JButton crear = new JButton("CREAR");
         crear.setBounds(415, 270, 600, 30); 
 
-        crear.addActionListener(e -> {
-            String a = a11.getText();
-            String b = a12.getText();
-            String c = a21.getText();
-            String d = a22.getText();
-            //Si los datos para la matriz incluyen letras o cualquier simbolo que no sea un digito es un error.
-            //Para controlarlo, se verifica antes de crear el objeto matriz. 
-            if(a.matches("\\d+")& b.matches("\\d+")& c.matches("\\d+")& d.matches("\\d+")){
-                Matriz m = new Matriz(Integer.parseInt(a),Integer.parseInt(b),Integer.parseInt(c),Integer.parseInt(d));
-                for(Matriz n : m){
-                    
-                }
-                cuadro2(m);
-                inicio.dispose();
-                }
-            else{cuadroError();}
-        });
+crear.addActionListener(e -> {
+    String a = a11.getText();
+    String b = a12.getText();
+    String c = a21.getText();
+    String d = a22.getText();
+    if(a.matches("\\d+") & b.matches("\\d+") & c.matches("\\d+") & d.matches("\\d+")){
+        Matriz m = new Matriz(Integer.parseInt(a), Integer.parseInt(b),
+                              Integer.parseInt(c), Integer.parseInt(d));
+        cuadro2(m);
+        inicio.dispose();
+    } else { cuadroError(); }
+});
 
         inicio.add(a11);
         inicio.add(a12);
@@ -102,7 +97,7 @@ public class Jframe{
         //Antes de llamar a las funciones de codificar, decodificar y mostrar matriz inversa como la matriz original
         //verificar que la matriz no sea nula, si es nula, mandar a ventana error. 
         cuadro2.setLayout(null);
-        cuadro2.setSize(600,450);
+        cuadro2.setSize(600,490);
         cuadro2.setLocationRelativeTo(null);
         cuadro2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -152,6 +147,16 @@ public class Jframe{
         JButton btnVolver = new JButton("Volver");
         btnVolver.setBounds(200, 390, 200, 30);
         cuadro2.add(btnVolver);
+        JButton btnChat = new JButton("Chat entre computadoras");
+        btnChat.setBounds(50, 360, 500, 30);   // ajusta Y si necesitas espacio
+        cuadro2.add(btnChat);
+        
+        btnChat.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TCP.iniciarChatTerminal(m);   // abre la terminal hacker con la matriz actual
+            }
+        });
 
         btnCodificador.addActionListener(new ActionListener() {
             @Override

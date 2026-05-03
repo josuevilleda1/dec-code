@@ -4,7 +4,9 @@ import java.util.*;
 
 public class TCP {
 
-    private static String obtenerIPReal() {
+    // ==================== UTILIDADES ====================
+
+    public static String obtenerIPReal() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -23,7 +25,46 @@ public class TCP {
         return "No encontrada";
     }
 
-    private static Matriz pedirClave(Scanner tecJlado) {
+    // Usado por JFrame: recibe la Matriz ya construida
+    public static void iniciarChatTerminal(Matriz m) {
+        new ChatTerminal(m).setVisible(true);
+    }
+
+    // ==================== MODO 1: Recibir un mensaje (consola) ====================
+    public static void modoRecibirMensaje(Matriz m, int puerto) throws IOException {
+        Scanner teclado = new Scanner(System.in);
+        Socket socket = establecerConexion(teclado, puerto);
+        BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+
+        System.out.println("\nEsperando mensaje...");
+        String mensajeCifrado = entrada.readLine();
+        System.out.println("Mensaje cifrado  : " + mensajeCifrado);
+        System.out.println("Mensaje original : " + m.decodificar(mensajeCifrado, m.matriz).trim());
+
+        socket.close();
+    }
+
+    // ==================== MODO 2: Enviar un mensaje (consola) ====================
+    public static void modoEnviarMensaje(Matriz m, int puerto) throws IOException {
+        Scanner teclado = new Scanner(System.in);
+        Socket socket = establecerConexion(teclado, puerto);
+        PrintWriter salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
+
+        System.out.print("\nEscribe el mensaje (letras A-Z, espacios o puntos): ");
+        String mensaje = teclado.nextLine();
+        String cifrado = m.codificar(mensaje, m.matriz);
+
+        if (cifrado == null) {
+            System.out.println("Error al cifrar.");
+        } else {
+            salida.println(cifrado);
+            System.out.println("Enviado: " + cifrado);
+        }
+        socket.close();
+    }
+
+    // ==================== CONEXION ====================
+    private static Matriz pedirClave(Scanner teclado) {
         System.out.println("\n--- Ingresa la clave de la matriz 2x2 ---");
         System.out.println("(Ambos lados deben usar los mismos valores)");
         System.out.print("  a (fila 1, col 1): "); int a = Integer.parseInt(teclado.nextLine().trim());
@@ -59,102 +100,7 @@ public class TCP {
         }
     }
 
-    // ==================== MODO 1: Recibir un mensaje ====================
-    private static void modoRecibirMensaje(Scanner teclado, int puerto) throws IOException {
-        System.out.println("\n=== MODO: RECIBIR MENSAJE CIFRADO ===");
-        Matriz m = pedirClave(teclado);
-
-        Socket socket = establecerConexion(teclado, puerto);
-        BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-
-        System.out.println("\nEsperando mensaje...");
-        String mensajeCifrado = entrada.readLine();
-        System.out.println("Mensaje cifrado  : " + mensajeCifrado);
-        System.out.println("Mensaje original : " + m.decodificar(mensajeCifrado, m.matriz).trim());
-
-        socket.close();
-    }
-
-    // ==================== MODO 2: Enviar un mensaje ====================
-    private static void modoEnviarMensaje(Scanner teclado, int puerto) throws IOException {
-        System.out.println("\n=== MODO: ENVIAR MENSAJE CIFRADO ===");
-        Matriz m = pedirClave(teclado);
-
-        Socket socket = establecerConexion(teclado, puerto);
-        PrintWriter salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
-
-        System.out.print("\nEscribe el mensaje (letras A-Z, espacios o puntos): ");
-        String mensaje = teclado.nextLine();
-        String cifrado = m.codificar(mensaje, m.matriz);
-
-        if (cifrado == null) {
-            System.out.println("Error al cifrar. Verifica que el mensaje no tenga caracteres especiales.");
-        } else {
-            salida.println(cifrado);
-            System.out.println("Mensaje cifrado enviado: " + cifrado);
-        }
-
-        socket.close();
-    }
-
-    // ==================== MODO 3: Chat cifrado ====================
-    private static void modoChat(Scanner teclado, int puerto) throws IOException {
-        System.out.println("\n=== MODO: CHAT CIFRADO ===");
-        Matriz m = pedirClave(teclado);
-
-        // Validar que la clave tenga inverso antes de conectar
-        try {
-            m.inversoModular(m.determinante(m.matriz));
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error con la clave: " + e.getMessage());
-            return;
-        }
-
-        Socket socket = establecerConexion(teclado, puerto);
-        final BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
-        final PrintWriter salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
-        final Socket socketFinal = socket;
-
-        // Hilo receptor: descifra cada mensaje al llegar
-        Thread hiloEscucha = new Thread(() -> {
-            try {
-                String mensajeCifrado;
-                while ((mensajeCifrado = entrada.readLine()) != null) {
-                    String claro = m.decodificar(mensajeCifrado, m.matriz);
-                    System.out.println("\r[Amigo cifrado] " + mensajeCifrado);
-                    System.out.println(" [Amigo claro ] " + (claro != null ? claro.trim() : "(error al descifrar)"));
-                    System.out.print("[Tu]: ");
-                    System.out.flush();
-                }
-            } catch (IOException e) {
-                if (!socketFinal.isClosed()) System.out.println("\nConexion perdida.");
-            }
-        });
-        hiloEscucha.setDaemon(true);
-        hiloEscucha.start();
-
-        System.out.println("Chat listo. Escribe 'salir' para terminar.");
-        System.out.println("Nota: usa solo letras A-Z, espacios o puntos.\n");
-
-        while (true) {
-            System.out.print("[Tu]: ");
-            String mensaje = teclado.nextLine();
-            if (mensaje.equalsIgnoreCase("salir")) break;
-            if (mensaje.trim().isEmpty()) continue;
-
-            String cifrado = m.codificar(mensaje, m.matriz);
-            if (cifrado == null) {
-                System.out.println("  No se pudo cifrar. Revisa los caracteres del mensaje.");
-                continue;
-            }
-            salida.println(cifrado);
-            if (salida.checkError()) { System.out.println("Error al enviar. Conexion caida."); break; }
-        }
-
-        socket.close();
-    }
-
-    // ==================== MAIN ====================
+    // ==================== MAIN (consola standalone) ====================
     public static void main(String[] args) {
         Scanner teclado = new Scanner(System.in);
         int PUERTO = 9999;
@@ -169,16 +115,13 @@ public class TCP {
 
         try {
             int modo = Integer.parseInt(teclado.nextLine().trim());
+            Matriz m = pedirClave(teclado);
             switch (modo) {
-                case 1 -> modoRecibirMensaje(teclado, PUERTO);
-                case 2 -> modoEnviarMensaje(teclado, PUERTO);
-                case 3 -> modoChat(teclado, PUERTO);
-                default -> System.out.println("Opcion invalida. Elige 1, 2 o 3.");
+                case 1 -> modoRecibirMensaje(m, PUERTO);
+                case 2 -> modoEnviarMensaje(m, PUERTO);
+                case 3 -> iniciarChatTerminal(m);
+                default -> System.out.println("Opcion invalida.");
             }
-        } catch (NumberFormatException e) {
-            System.out.println("Escribe solo el numero de la opcion.");
-        } catch (ConnectException e) {
-            System.out.println("No se pudo conectar. Verifica la IP y que el otro lado este esperando.");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
