@@ -148,7 +148,7 @@ crear.addActionListener(e -> {
         btnVolver.setBounds(200, 390, 200, 30);
         cuadro2.add(btnVolver);
         JButton btnChat = new JButton("Chat entre computadoras");
-        btnChat.setBounds(50, 360, 500, 30);   // ajusta Y si necesitas espacio
+        btnChat.setBounds(50, 420, 500, 30);   // ajusta Y si necesitas espacio
         cuadro2.add(btnChat);
         
         btnChat.addActionListener(new ActionListener() {
