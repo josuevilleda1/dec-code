@@ -25,8 +25,9 @@ public class ChatTerminal extends JFrame {
     private final Matriz      m;
     private Socket            socket;
     private PrintWriter       salida;
-    private boolean           conectado   = false;
-    private boolean           esServidor  = false;
+    private boolean           conectado        = false;
+    private boolean           esServidor       = false;
+    private String            modoSeleccionado = "CHAT"; // CHAT | ENVIAR | RECIBIR
     private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
     // ── Componentes ───────────────────────────────────────────────────────────
@@ -55,7 +56,7 @@ public class ChatTerminal extends JFrame {
     // ── Construcción de UI ────────────────────────────────────────────────────
     private void construirUI() {
         setTitle("[ CIPHER TERMINAL v1.0 ]");
-        setSize(820, 580);
+        setSize(820, 620);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -128,22 +129,68 @@ public class ChatTerminal extends JFrame {
     private JPanel construirPanelConexion() {
         JPanel p = new JPanel(null);
         p.setBackground(BG);
-        p.setPreferredSize(new Dimension(820, 100));
+        p.setPreferredSize(new Dimension(820, 140));
         p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, GREEN_DARK));
 
-        JLabel pregunta = new JLabel("> SELECCIONA TU ROL EN LA RED:");
-        pregunta.setFont(MONO);
-        pregunta.setForeground(GREEN_DIM);
-        pregunta.setBounds(14, 12, 500, 22);
-        p.add(pregunta);
+        // ── FILA 1: elegir modo ───────────────────────────────────────────────
+        JLabel lblModo = new JLabel("> SELECCIONA MODO:");
+        lblModo.setFont(MONO);
+        lblModo.setForeground(GREEN_DIM);
+        lblModo.setBounds(14, 10, 300, 22);
+        p.add(lblModo);
 
-        btnServidor = hacerBoton("[ SERVIDOR ]", 14, 42, 200, 30);
-        btnCliente  = hacerBoton("[ CLIENTE  ]", 230, 42, 200, 30);
+        JButton btnModoChat    = hacerBoton("[ CHAT        ]", 14,  38, 190, 28);
+        JButton btnModoEnviar  = hacerBoton("[ SOLO ENVIAR ]", 214, 38, 190, 28);
+        JButton btnModoRecibir = hacerBoton("[ SOLO RECIBIR]", 414, 38, 190, 28);
+        p.add(btnModoChat);
+        p.add(btnModoEnviar);
+        p.add(btnModoRecibir);
+
+        // resaltar el modo activo por defecto
+        btnModoChat.setForeground(GREEN);
+        btnModoChat.setBackground(GREEN_DARK);
+
+        btnModoChat.addActionListener(e -> {
+            modoSeleccionado = "CHAT";
+            btnModoChat.setForeground(GREEN);    btnModoChat.setBackground(GREEN_DARK);
+            btnModoEnviar.setForeground(GREEN_DIM); btnModoEnviar.setBackground(BG);
+            btnModoRecibir.setForeground(GREEN_DIM); btnModoRecibir.setBackground(BG);
+        });
+        btnModoEnviar.addActionListener(e -> {
+            modoSeleccionado = "ENVIAR";
+            btnModoEnviar.setForeground(GREEN);  btnModoEnviar.setBackground(GREEN_DARK);
+            btnModoChat.setForeground(GREEN_DIM);   btnModoChat.setBackground(BG);
+            btnModoRecibir.setForeground(GREEN_DIM); btnModoRecibir.setBackground(BG);
+        });
+        btnModoRecibir.addActionListener(e -> {
+            modoSeleccionado = "RECIBIR";
+            btnModoRecibir.setForeground(GREEN); btnModoRecibir.setBackground(GREEN_DARK);
+            btnModoChat.setForeground(GREEN_DIM);   btnModoChat.setBackground(BG);
+            btnModoEnviar.setForeground(GREEN_DIM);  btnModoEnviar.setBackground(BG);
+        });
+
+        // separador fino entre filas
+        JPanel sep = new JPanel();
+        sep.setBackground(GREEN_DARK);
+        sep.setBounds(14, 74, 792, 1);
+        p.add(sep);
+
+        // ── FILA 2: elegir rol ────────────────────────────────────────────────
+        JLabel lblRol = new JLabel("> SELECCIONA ROL:");
+        lblRol.setFont(MONO);
+        lblRol.setForeground(GREEN_DIM);
+        lblRol.setBounds(14, 82, 300, 22);
+        p.add(lblRol);
+
+        btnServidor = hacerBoton("[ SERVIDOR ]", 14,  108, 190, 28);
+        btnCliente  = hacerBoton("[ CLIENTE  ]", 214, 108, 190, 28);
+        p.add(btnServidor);
+        p.add(btnCliente);
 
         lblIP = new JLabel("");
         lblIP.setFont(MONO_SM);
         lblIP.setForeground(AMBER);
-        lblIP.setBounds(450, 42, 360, 30);
+        lblIP.setBounds(420, 108, 390, 28);
         p.add(lblIP);
 
         inputIP = new JTextField();
@@ -154,20 +201,18 @@ public class ChatTerminal extends JFrame {
         inputIP.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(GREEN_DARK),
             new EmptyBorder(2, 6, 2, 6)));
-        inputIP.setBounds(450, 42, 240, 30);
+        inputIP.setBounds(420, 108, 270, 28);
         inputIP.setVisible(false);
+        p.add(inputIP);
 
-        JButton btnConectar = hacerBoton("[ CONECTAR ]", 700, 42, 110, 30);
+        JButton btnConectar = hacerBoton("[ CONECTAR ]", 700, 108, 110, 28);
         btnConectar.setVisible(false);
         p.add(btnConectar);
-        p.add(inputIP);
 
         btnServidor.addActionListener(e -> {
             esServidor = true;
-            btnServidor.setForeground(GREEN);
-            btnServidor.setBackground(GREEN_DARK);
-            btnCliente.setForeground(GREEN_DIM);
-            btnCliente.setBackground(BG);
+            btnServidor.setForeground(GREEN);  btnServidor.setBackground(GREEN_DARK);
+            btnCliente.setForeground(GREEN_DIM); btnCliente.setBackground(BG);
             inputIP.setVisible(false);
             btnConectar.setVisible(false);
             lblIP.setText("> TU IP: " + TCP.obtenerIPReal() + "  — esperando...");
@@ -177,10 +222,8 @@ public class ChatTerminal extends JFrame {
 
         btnCliente.addActionListener(e -> {
             esServidor = false;
-            btnCliente.setForeground(GREEN);
-            btnCliente.setBackground(GREEN_DARK);
-            btnServidor.setForeground(GREEN_DIM);
-            btnServidor.setBackground(BG);
+            btnCliente.setForeground(GREEN);   btnCliente.setBackground(GREEN_DARK);
+            btnServidor.setForeground(GREEN_DIM); btnServidor.setBackground(BG);
             lblIP.setVisible(false);
             inputIP.setVisible(true);
             btnConectar.setVisible(true);
@@ -191,14 +234,10 @@ public class ChatTerminal extends JFrame {
             String ip = inputIP.getText().trim();
             if (!ip.isEmpty()) new Thread(() -> iniciarComoCliente(ip)).start();
         });
-
         inputIP.addActionListener(e -> {
             String ip = inputIP.getText().trim();
             if (!ip.isEmpty()) new Thread(() -> iniciarComoCliente(ip)).start();
         });
-
-        p.add(btnServidor);
-        p.add(btnCliente);
 
         return p;
     }
@@ -275,7 +314,7 @@ public class ChatTerminal extends JFrame {
     // ── Conexión ──────────────────────────────────────────────────────────────
     private void iniciarComoServidor() {
         try {
-            log("> MODO: SERVIDOR  |  PUERTO: " + PUERTO, AMBER);
+            log("> MODO: " + modoSeleccionado + "  |  ROL: SERVIDOR  |  PUERTO: " + PUERTO, AMBER);
             log("> TU IP: " + TCP.obtenerIPReal(), AMBER);
             log("> ESPERANDO CONEXION ENTRANTE...", GREEN_DIM);
 
@@ -288,9 +327,8 @@ public class ChatTerminal extends JFrame {
             log("", GREEN);
             log("▌ CONEXION ESTABLECIDA CON: " + ipAmigo, GREEN);
             log("─────────────────────────────────────────────", GREEN_DARK);
-            setEstado("● ONLINE  //  " + ipAmigo);
-            cambiarAChat();
-            iniciarHiloEscucha();
+            setEstado("● ONLINE  //  " + ipAmigo + "  //  " + modoSeleccionado);
+            ejecutarModo();
 
         } catch (IOException e) {
             log("[ERROR] " + e.getMessage(), RED_ERR);
@@ -299,18 +337,25 @@ public class ChatTerminal extends JFrame {
 
     private void iniciarComoCliente(String ip) {
         try {
-            log("> MODO: CLIENTE  |  TARGET: " + ip + ":" + PUERTO, AMBER);
+            log("> MODO: " + modoSeleccionado + "  |  ROL: CLIENTE  |  TARGET: " + ip + ":" + PUERTO, AMBER);
             log("> CONECTANDO...", GREEN_DIM);
             socket = new Socket(ip, PUERTO);
             conectado = true;
             log("", GREEN);
             log("▌ CONECTADO AL SERVIDOR: " + ip, GREEN);
             log("─────────────────────────────────────────────", GREEN_DARK);
-            setEstado("● ONLINE  //  " + ip);
-            cambiarAChat();
-            iniciarHiloEscucha();
+            setEstado("● ONLINE  //  " + ip + "  //  " + modoSeleccionado);
+            ejecutarModo();
         } catch (IOException e) {
             log("[ERROR] No se pudo conectar: " + e.getMessage(), RED_ERR);
+        }
+    }
+
+    private void ejecutarModo() {
+        switch (modoSeleccionado) {
+            case "CHAT"    -> { cambiarAChat(); iniciarHiloEscucha(); }
+            case "ENVIAR"  -> { cambiarAChat(); /* solo envía, no escucha */ }
+            case "RECIBIR" -> modoSoloRecibir();
         }
     }
 
@@ -338,11 +383,51 @@ public class ChatTerminal extends JFrame {
         }
     }
 
+    private void modoSoloRecibir() {
+        // En modo RECIBIR solo mostramos lo que llega, sin abrir panel de escritura
+        new Thread(() -> {
+            try {
+                BufferedReader entrada = new BufferedReader(
+                    new InputStreamReader(socket.getInputStream(), "UTF-8"));
+                log("> ESPERANDO MENSAJE ENTRANTE...", GREEN_DIM);
+                String cifrado = entrada.readLine();
+                if (cifrado != null) {
+                    String claro = m.decodificar(cifrado, m.matriz);
+                    String hora  = sdf.format(new Date());
+                    log("", GREEN);
+                    log("[" + hora + "] MENSAJE RECIBIDO", AMBER);
+                    log("[" + hora + "] ENCRYPTED  >  " + cifrado, GREEN_DARK);
+                    log("[" + hora + "] DECRYPTED  >  " + (claro != null ? claro.trim() : "ERR"), GREEN);
+                    log("─────────────────────────────────────────────", GREEN_DARK);
+                    log("> TRANSMISION COMPLETADA. CONEXION CERRADA.", GREEN_DIM);
+                }
+                socket.close();
+                setEstado("● OFFLINE");
+            } catch (IOException e) {
+                log("[ERROR] " + e.getMessage(), RED_ERR);
+            }
+        }).start();
+    }
+
     // ── Envío de mensaje ──────────────────────────────────────────────────────
     private void enviarMensaje() {
-        if (!conectado || salida == null) return;
+        if (!conectado) return;
+        if (modoSeleccionado.equals("RECIBIR")) {
+            log("[WARN] Estas en modo RECIBIR. No puedes enviar.", AMBER);
+            return;
+        }
         String msg = inputMensaje.getText().trim();
         if (msg.isEmpty()) return;
+
+        // Inicializar stream de salida si aún no existe (modo ENVIAR)
+        if (salida == null) {
+            try {
+                salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
+            } catch (IOException e) {
+                log("[ERROR] No se pudo abrir stream: " + e.getMessage(), RED_ERR);
+                return;
+            }
+        }
 
         String cifrado = m.codificar(msg, m.matriz);
         if (cifrado == null) {
@@ -354,7 +439,18 @@ public class ChatTerminal extends JFrame {
         log("[" + hora + "] TX PLAINTEXT  > " + msg.toUpperCase(), GREEN_DIM);
         log("[" + hora + "] TX ENCRYPTED  > " + cifrado, GREEN);
         inputMensaje.setText("");
-        if (salida.checkError()) log("[ERROR] Fallo al enviar.", RED_ERR);
+
+        // En modo ENVIAR cerramos tras mandar el mensaje
+        if (modoSeleccionado.equals("ENVIAR")) {
+            try {
+                log("─────────────────────────────────────────────", GREEN_DARK);
+                log("> MENSAJE ENVIADO. CONEXION CERRADA.", GREEN_DIM);
+                socket.close();
+                setEstado("● OFFLINE");
+            } catch (IOException ex) { /* ignorar */ }
+        } else {
+            if (salida.checkError()) log("[ERROR] Fallo al enviar.", RED_ERR);
+        }
     }
 
     // ── Helpers UI ────────────────────────────────────────────────────────────
