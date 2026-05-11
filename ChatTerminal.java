@@ -1,27 +1,27 @@
-import javax.swing.*;
-import javax.swing.border.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import javax.swing.*; // Interfaz grafica
+import javax.swing.border.*; // componentes para poder usar la libreria
+import java.awt.*;// esta la usamos para los colores y llos graficos
+import java.awt.event.*;// esucha el mause y el teclado
+import java.io.*; // entrada y salida de informacion 
+import java.net.*; // uso de sockets 
+import java.text.SimpleDateFormat; // para poder darle el frmato de hora que queremos
+import java.util.Date;// para tener la hora en que se mando los mensajes 
 
 public class ChatTerminal extends JFrame {
 
-    // ── Colores y fuente ──────────────────────────────────────────────────────
-    private static final Color BG          = new Color(0,   0,   0);
-    private static final Color GREEN       = new Color(0,   255, 70);
-    private static final Color GREEN_DIM   = new Color(0,   180, 50);
-    private static final Color GREEN_DARK  = new Color(0,    60, 20);
-    private static final Color AMBER       = new Color(255, 200,  0);
-    private static final Color RED_ERR     = new Color(255,  50, 50);
+    //  Colores 
+    private static final Color negro = new Color(0,   0,   0);
+    private static final Color Verde_Chinto = new Color(0,   255, 70);
+    private static final Color Verde_Normal   = new Color(0,   180, 50);
+    private static final Color Verde_Oscuro  = new Color(0,    60, 20);
+    private static final Color Amarillo       = new Color(255, 200,  0);
+    private static final Color Rojo     = new Color(255,  50, 50);
+    // Fuentes
     private static final Font  MONO        = new Font("Courier New", Font.BOLD, 13);
     private static final Font  MONO_SM     = new Font("Courier New", Font.PLAIN, 12);
     private static final int   PUERTO      = 9999;
 
-    // ── Estado ────────────────────────────────────────────────────────────────
+    // herramienas para la interface 
     private final Matriz      m;
     private Socket            socket;
     private PrintWriter       salida;
@@ -60,21 +60,21 @@ public class ChatTerminal extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
-        getContentPane().setBackground(BG);
+        getContentPane().setBackground(negro);
         setLayout(new BorderLayout(0, 0));
 
         // ── Header ────────────────────────────────────────────────────────────
         JPanel header = new JPanel(new BorderLayout());
-        header.setBackground(BG);
+        header.setBackground(negro);
         header.setBorder(new EmptyBorder(10, 14, 6, 14));
 
         JLabel titulo = new JLabel("[ HILL CIPHER SECURE TERMINAL ]");
         titulo.setFont(new Font("Courier New", Font.BOLD, 16));
-        titulo.setForeground(GREEN);
+        titulo.setForeground(Verde_Chinto);
 
         lblEstado = new JLabel("● OFFLINE");
         lblEstado.setFont(MONO_SM);
-        lblEstado.setForeground(RED_ERR);
+        lblEstado.setForeground(Rojo);
         lblEstado.setHorizontalAlignment(SwingConstants.RIGHT);
 
         header.add(titulo,   BorderLayout.WEST);
@@ -82,11 +82,11 @@ public class ChatTerminal extends JFrame {
 
         // Línea separadora verde
         JPanel lineaSep = new JPanel();
-        lineaSep.setBackground(GREEN_DARK);
+        lineaSep.setBackground(Verde_Oscuro);
         lineaSep.setPreferredSize(new Dimension(820, 1));
 
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(BG);
+        topPanel.setBackground(negro);
         topPanel.add(header,  BorderLayout.NORTH);
         topPanel.add(lineaSep, BorderLayout.SOUTH);
 
@@ -94,28 +94,28 @@ public class ChatTerminal extends JFrame {
 
         // ── Pantalla principal ────────────────────────────────────────────────
         pantalla = new JTextArea();
-        pantalla.setBackground(BG);
-        pantalla.setForeground(GREEN);
+        pantalla.setBackground(negro);
+        pantalla.setForeground(Verde_Chinto);
         pantalla.setFont(MONO_SM);
         pantalla.setEditable(false);
-        pantalla.setCaretColor(GREEN);
+        pantalla.setCaretColor(Verde_Chinto);
         pantalla.setLineWrap(true);
         pantalla.setWrapStyleWord(false);
         pantalla.setBorder(new EmptyBorder(8, 12, 8, 12));
 
         JScrollPane scroll = new JScrollPane(pantalla);
-        scroll.setBackground(BG);
-        scroll.setBorder(BorderFactory.createLineBorder(GREEN_DARK, 1));
-        scroll.getViewport().setBackground(BG);
+        scroll.setBackground(negro);
+        scroll.setBorder(BorderFactory.createLineBorder(Verde_Oscuro, 1));
+        scroll.getViewport().setBackground(negro);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scroll.getVerticalScrollBar().setBackground(BG);
-        scroll.getVerticalScrollBar().setForeground(GREEN_DARK);
+        scroll.getVerticalScrollBar().setBackground(negro);
+        scroll.getVerticalScrollBar().setForeground(Verde_Oscuro);
 
         add(scroll, BorderLayout.CENTER);
 
         // ── Panel inferior (conexión + chat) ──────────────────────────────────
         JPanel bottom = new JPanel(new CardLayout());
-        bottom.setBackground(BG);
+        bottom.setBackground(negro);
 
         panelConexion = construirPanelConexion();
         panelChat     = construirPanelChat();
@@ -128,57 +128,57 @@ public class ChatTerminal extends JFrame {
 
     private JPanel construirPanelConexion() {
         JPanel p = new JPanel(null);
-        p.setBackground(BG);
+        p.setBackground(negro);
         p.setPreferredSize(new Dimension(820, 140));
-        p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, GREEN_DARK));
+        p.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Verde_Oscuro));
 
         // ── FILA 1: elegir modo ───────────────────────────────────────────────
         JLabel lblModo = new JLabel("> SELECCIONA MODO:");
         lblModo.setFont(MONO);
-        lblModo.setForeground(GREEN_DIM);
+        lblModo.setForeground(Verde_Normal);
         lblModo.setBounds(14, 10, 300, 22);
         p.add(lblModo);
 
         JButton btnModoChat    = hacerBoton("[ CHAT        ]", 14,  38, 190, 28);
-        JButton btnModoEnviar  = hacerBoton("[ SOLO ENVIAR ]", 214, 38, 190, 28);
-        JButton btnModoRecibir = hacerBoton("[ SOLO RECIBIR]", 414, 38, 190, 28);
+        JButton btnModoEnviar  = hacerBoton("[ SOLO ENVIAR DATO ]", 214, 38, 190, 28);
+        JButton btnModoRecibir = hacerBoton("[ SOLO RECIBIR DATO]", 414, 38, 190, 28);
         p.add(btnModoChat);
         p.add(btnModoEnviar);
         p.add(btnModoRecibir);
 
         // resaltar el modo activo por defecto
-        btnModoChat.setForeground(GREEN);
-        btnModoChat.setBackground(GREEN_DARK);
+        btnModoChat.setForeground(Verde_Chinto);
+        btnModoChat.setBackground(Verde_Oscuro);
 
         btnModoChat.addActionListener(e -> {
             modoSeleccionado = "CHAT";
-            btnModoChat.setForeground(GREEN);    btnModoChat.setBackground(GREEN_DARK);
-            btnModoEnviar.setForeground(GREEN_DIM); btnModoEnviar.setBackground(BG);
-            btnModoRecibir.setForeground(GREEN_DIM); btnModoRecibir.setBackground(BG);
+            btnModoChat.setForeground(Verde_Chinto);    btnModoChat.setBackground(Verde_Oscuro);
+            btnModoEnviar.setForeground(Verde_Normal); btnModoEnviar.setBackground(negro);
+            btnModoRecibir.setForeground(Verde_Normal); btnModoRecibir.setBackground(negro);
         });
         btnModoEnviar.addActionListener(e -> {
             modoSeleccionado = "ENVIAR";
-            btnModoEnviar.setForeground(GREEN);  btnModoEnviar.setBackground(GREEN_DARK);
-            btnModoChat.setForeground(GREEN_DIM);   btnModoChat.setBackground(BG);
-            btnModoRecibir.setForeground(GREEN_DIM); btnModoRecibir.setBackground(BG);
+            btnModoEnviar.setForeground(Verde_Chinto);  btnModoEnviar.setBackground(Verde_Oscuro);
+            btnModoChat.setForeground(Verde_Normal);   btnModoChat.setBackground(negro);
+            btnModoRecibir.setForeground(Verde_Normal); btnModoRecibir.setBackground(negro);
         });
         btnModoRecibir.addActionListener(e -> {
             modoSeleccionado = "RECIBIR";
-            btnModoRecibir.setForeground(GREEN); btnModoRecibir.setBackground(GREEN_DARK);
-            btnModoChat.setForeground(GREEN_DIM);   btnModoChat.setBackground(BG);
-            btnModoEnviar.setForeground(GREEN_DIM);  btnModoEnviar.setBackground(BG);
+            btnModoRecibir.setForeground(Verde_Chinto); btnModoRecibir.setBackground(Verde_Oscuro);
+            btnModoChat.setForeground(Verde_Normal);   btnModoChat.setBackground(negro);
+            btnModoEnviar.setForeground(Verde_Normal);  btnModoEnviar.setBackground(negro);
         });
 
         // separador fino entre filas
         JPanel sep = new JPanel();
-        sep.setBackground(GREEN_DARK);
+        sep.setBackground(Verde_Oscuro);
         sep.setBounds(14, 74, 792, 1);
         p.add(sep);
 
         // ── FILA 2: elegir rol ────────────────────────────────────────────────
-        JLabel lblRol = new JLabel("> SELECCIONA ROL:");
+        JLabel lblRol = new JLabel("> POCICION:");
         lblRol.setFont(MONO);
-        lblRol.setForeground(GREEN_DIM);
+        lblRol.setForeground(Verde_Normal);
         lblRol.setBounds(14, 82, 300, 22);
         p.add(lblRol);
 
@@ -189,30 +189,30 @@ public class ChatTerminal extends JFrame {
 
         lblIP = new JLabel("");
         lblIP.setFont(MONO_SM);
-        lblIP.setForeground(AMBER);
+        lblIP.setForeground(Amarillo);
         lblIP.setBounds(420, 108, 390, 28);
         p.add(lblIP);
 
         inputIP = new JTextField();
-        inputIP.setBackground(BG);
-        inputIP.setForeground(GREEN);
-        inputIP.setCaretColor(GREEN);
+        inputIP.setBackground(negro);
+        inputIP.setForeground(Verde_Chinto);
+        inputIP.setCaretColor(Verde_Chinto);
         inputIP.setFont(MONO);
         inputIP.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(GREEN_DARK),
+            BorderFactory.createLineBorder(Verde_Oscuro),
             new EmptyBorder(2, 6, 2, 6)));
         inputIP.setBounds(420, 108, 270, 28);
         inputIP.setVisible(false);
         p.add(inputIP);
 
-        JButton btnConectar = hacerBoton("[ CONECTAR ]", 700, 108, 110, 28);
+        JButton btnConectar = hacerBoton("[ ENTRAR A SALA ]", 700, 108, 110, 28);
         btnConectar.setVisible(false);
         p.add(btnConectar);
 
         btnServidor.addActionListener(e -> {
             esServidor = true;
-            btnServidor.setForeground(GREEN);  btnServidor.setBackground(GREEN_DARK);
-            btnCliente.setForeground(GREEN_DIM); btnCliente.setBackground(BG);
+            btnServidor.setForeground(Verde_Chinto);  btnServidor.setBackground(Verde_Oscuro);
+            btnCliente.setForeground(Verde_Normal); btnCliente.setBackground(negro);
             inputIP.setVisible(false);
             btnConectar.setVisible(false);
             lblIP.setText("> TU IP: " + TCP.obtenerIPReal() + "  — esperando...");
@@ -222,8 +222,8 @@ public class ChatTerminal extends JFrame {
 
         btnCliente.addActionListener(e -> {
             esServidor = false;
-            btnCliente.setForeground(GREEN);   btnCliente.setBackground(GREEN_DARK);
-            btnServidor.setForeground(GREEN_DIM); btnServidor.setBackground(BG);
+            btnCliente.setForeground(Verde_Chinto);   btnCliente.setBackground(Verde_Oscuro);
+            btnServidor.setForeground(Verde_Normal); btnServidor.setBackground(negro);
             lblIP.setVisible(false);
             inputIP.setVisible(true);
             btnConectar.setVisible(true);
@@ -244,22 +244,22 @@ public class ChatTerminal extends JFrame {
 
     private JPanel construirPanelChat() {
         JPanel p = new JPanel(new BorderLayout(6, 0));
-        p.setBackground(BG);
+        p.setBackground(negro);
         p.setPreferredSize(new Dimension(820, 50));
         p.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(1, 0, 0, 0, GREEN_DARK),
+            BorderFactory.createMatteBorder(1, 0, 0, 0, Verde_Oscuro),
             new EmptyBorder(8, 12, 8, 12)));
 
         JLabel prompt = new JLabel("> ");
         prompt.setFont(MONO);
-        prompt.setForeground(GREEN);
+        prompt.setForeground(Verde_Chinto);
 
         inputMensaje = new JTextField();
-        inputMensaje.setBackground(BG);
-        inputMensaje.setForeground(GREEN);
-        inputMensaje.setCaretColor(GREEN);
+        inputMensaje.setBackground(negro);
+        inputMensaje.setForeground(Verde_Chinto);
+        inputMensaje.setCaretColor(Verde_Chinto);
         inputMensaje.setFont(MONO);
-        inputMensaje.setBorder(BorderFactory.createLineBorder(GREEN_DARK));
+        inputMensaje.setBorder(BorderFactory.createLineBorder(Verde_Oscuro));
         inputMensaje.addActionListener(e -> enviarMensaje());
 
         btnEnviar = hacerBoton("[ SEND ]", 0, 0, 90, 34);
@@ -275,15 +275,15 @@ public class ChatTerminal extends JFrame {
     private JButton hacerBoton(String texto, int x, int y, int w, int h) {
         JButton b = new JButton(texto);
         b.setFont(MONO);
-        b.setForeground(GREEN_DIM);
-        b.setBackground(BG);
+        b.setForeground(Verde_Normal);
+        b.setBackground(negro);
         b.setFocusPainted(false);
-        b.setBorder(BorderFactory.createLineBorder(GREEN_DARK));
+        b.setBorder(BorderFactory.createLineBorder(Verde_Oscuro));
         b.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         b.setBounds(x, y, w, h);
         b.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { b.setForeground(GREEN); b.setBorder(BorderFactory.createLineBorder(GREEN)); }
-            public void mouseExited(MouseEvent e)  { b.setForeground(GREEN_DIM); b.setBorder(BorderFactory.createLineBorder(GREEN_DARK)); }
+            public void mouseEntered(MouseEvent e) { b.setForeground(Verde_Chinto); b.setBorder(BorderFactory.createLineBorder(Verde_Chinto)); }
+            public void mouseExited(MouseEvent e)  { b.setForeground(Verde_Normal); b.setBorder(BorderFactory.createLineBorder(Verde_Oscuro)); }
         });
         return b;
     }
@@ -291,19 +291,23 @@ public class ChatTerminal extends JFrame {
     // ── Efecto boot ───────────────────────────────────────────────────────────
     private void iniciarEfectoBoot() {
         String[] lineas = {
-            "INITIALIZING HILL CIPHER PROTOCOL...",
-            "LOADING ENCRYPTION MATRIX............[OK]",
-            "VERIFYING MATRIX DETERMINANT.........[OK]",
-            "SECURE CHANNEL READY.",
+            "...INITIALIZING...",
+            "CARGANDO DESENCRIPCION DE DATOS............[OK]",
+            "VERIFICANDO COMPONENTES DE LA MATRIZ.........[OK]",
+            "",
+            "",
+            "",
+            "...",
+
             "─────────────────────────────────────────────",
-            "SELECT ROLE TO BEGIN CONNECTION.",
+            "Decida operacion a realizar",
             ""
         };
         javax.swing.Timer t = new javax.swing.Timer(120, null);
         int[] idx = {0};
         t.addActionListener(e -> {
             if (idx[0] < lineas.length) {
-                log(lineas[idx[0]++], GREEN_DIM);
+                log(lineas[idx[0]++], Verde_Normal);
             } else {
                 ((javax.swing.Timer) e.getSource()).stop();
             }
@@ -314,9 +318,9 @@ public class ChatTerminal extends JFrame {
     // ── Conexión ──────────────────────────────────────────────────────────────
     private void iniciarComoServidor() {
         try {
-            log("> MODO: " + modoSeleccionado + "  |  ROL: SERVIDOR  |  PUERTO: " + PUERTO, AMBER);
-            log("> TU IP: " + TCP.obtenerIPReal(), AMBER);
-            log("> ESPERANDO CONEXION ENTRANTE...", GREEN_DIM);
+            log("> MODO: " + modoSeleccionado + "  |  ROL: SERVIDOR  |  PUERTO: " + PUERTO, Amarillo);
+            log("> TU IP: " + TCP.obtenerIPReal(), Amarillo);
+            log("> ESPERANDO CONEXION ENTRANTE...", Verde_Normal);
 
             ServerSocket ss = new ServerSocket(PUERTO);
             socket = ss.accept();
@@ -324,30 +328,30 @@ public class ChatTerminal extends JFrame {
 
             conectado = true;
             String ipAmigo = socket.getInetAddress().getHostAddress();
-            log("", GREEN);
-            log("▌ CONEXION ESTABLECIDA CON: " + ipAmigo, GREEN);
-            log("─────────────────────────────────────────────", GREEN_DARK);
+            log("", Verde_Chinto);
+            log("▌ CONEXION ESTABLECIDA CON: " + ipAmigo, Verde_Chinto);
+            log("─────────────────────────────────────────────", Verde_Oscuro);
             setEstado("● ONLINE  //  " + ipAmigo + "  //  " + modoSeleccionado);
             ejecutarModo();
 
         } catch (IOException e) {
-            log("[ERROR] " + e.getMessage(), RED_ERR);
+            log("[ERROR] " + e.getMessage(), Rojo);
         }
     }
 
     private void iniciarComoCliente(String ip) {
         try {
-            log("> MODO: " + modoSeleccionado + "  |  ROL: CLIENTE  |  TARGET: " + ip + ":" + PUERTO, AMBER);
-            log("> CONECTANDO...", GREEN_DIM);
+            log("> MODO: " + modoSeleccionado + "  |  ROL: CLIENTE  |  TARGET: " + ip + ":" + PUERTO, Amarillo);
+            log("> CONECTANDO...", Verde_Normal);
             socket = new Socket(ip, PUERTO);
             conectado = true;
-            log("", GREEN);
-            log("▌ CONECTADO AL SERVIDOR: " + ip, GREEN);
-            log("─────────────────────────────────────────────", GREEN_DARK);
+            log("", Verde_Chinto);
+            log("▌ CONECTADO AL SERVIDOR: " + ip, Verde_Chinto);
+            log("─────────────────────────────────────────────", Verde_Oscuro);
             setEstado("● ONLINE  //  " + ip + "  //  " + modoSeleccionado);
             ejecutarModo();
         } catch (IOException e) {
-            log("[ERROR] No se pudo conectar: " + e.getMessage(), RED_ERR);
+            log("[ERROR] No se pudo conectar: " + e.getMessage(), Rojo);
         }
     }
 
@@ -370,16 +374,16 @@ public class ChatTerminal extends JFrame {
                     while ((cifrado = entrada.readLine()) != null) {
                         String claro = m.decodificar(cifrado, m.matriz);
                         String hora  = sdf.format(new Date());
-                        log("[" + hora + "] RX ENCRYPTED  > " + cifrado, GREEN_DARK);
-                        log("[" + hora + "] RX DECRYPTED  > " + (claro != null ? claro.trim() : "ERR"), GREEN);
+                        log("[" + hora + "] RX ENCRYPTED  > " + cifrado, Verde_Oscuro);
+                        log("[" + hora + "] RX DECRYPTED  > " + (claro != null ? claro.trim() : "ERR"), Verde_Chinto);
                     }
                 } catch (IOException e) {
-                    if (!socket.isClosed()) log("[WARN] CONEXION PERDIDA.", RED_ERR);
+                    if (!socket.isClosed()) log("[WARN] CONEXION PERDIDA.", Rojo);
                 }
             }).start();
 
         } catch (IOException e) {
-            log("[ERROR] Stream: " + e.getMessage(), RED_ERR);
+            log("[ERROR] Stream: " + e.getMessage(), Rojo);
         }
     }
 
@@ -389,22 +393,22 @@ public class ChatTerminal extends JFrame {
             try {
                 BufferedReader entrada = new BufferedReader(
                     new InputStreamReader(socket.getInputStream(), "UTF-8"));
-                log("> ESPERANDO MENSAJE ENTRANTE...", GREEN_DIM);
+                log("> ESPERANDO MENSAJE ENTRANTE...", Verde_Normal);
                 String cifrado = entrada.readLine();
                 if (cifrado != null) {
                     String claro = m.decodificar(cifrado, m.matriz);
                     String hora  = sdf.format(new Date());
-                    log("", GREEN);
-                    log("[" + hora + "] MENSAJE RECIBIDO", AMBER);
-                    log("[" + hora + "] ENCRYPTED  >  " + cifrado, GREEN_DARK);
-                    log("[" + hora + "] DECRYPTED  >  " + (claro != null ? claro.trim() : "ERR"), GREEN);
-                    log("─────────────────────────────────────────────", GREEN_DARK);
-                    log("> TRANSMISION COMPLETADA. CONEXION CERRADA.", GREEN_DIM);
+                    log("", Verde_Chinto);
+                    log("[" + hora + "] MENSAJE RECIBIDO", Amarillo);
+                    log("[" + hora + "] ENCRYPTED  >  " + cifrado, Verde_Oscuro);
+                    log("[" + hora + "] DECRYPTED  >  " + (claro != null ? claro.trim() : "ERR"), Verde_Chinto);
+                    log("─────────────────────────────────────────────", Verde_Oscuro);
+                    log("> TRANSMISION COMPLETADA. CONEXION CERRADA.", Verde_Normal);
                 }
                 socket.close();
                 setEstado("● OFFLINE");
             } catch (IOException e) {
-                log("[ERROR] " + e.getMessage(), RED_ERR);
+                log("[ERROR] " + e.getMessage(), Rojo);
             }
         }).start();
     }
@@ -413,7 +417,7 @@ public class ChatTerminal extends JFrame {
     private void enviarMensaje() {
         if (!conectado) return;
         if (modoSeleccionado.equals("RECIBIR")) {
-            log("[WARN] Estas en modo RECIBIR. No puedes enviar.", AMBER);
+            log("[WARN] Estas en modo RECIBIR. No puedes enviar.", Amarillo);
             return;
         }
         String msg = inputMensaje.getText().trim();
@@ -424,41 +428,37 @@ public class ChatTerminal extends JFrame {
             try {
                 salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
             } catch (IOException e) {
-                log("[ERROR] No se pudo abrir stream: " + e.getMessage(), RED_ERR);
+                log("[ERROR] No se pudo abrir stream: " + e.getMessage(), Rojo);
                 return;
             }
         }
 
         String cifrado = m.codificar(msg, m.matriz);
         if (cifrado == null) {
-            log("[WARN] Solo letras A-Z, espacios o puntos.", AMBER);
+            log("[WARNING] SOLO PUEDES MANDAR LETRAS ESPACIOS Y PUNTOS .", Rojo);
             return;
         }
         salida.println(cifrado);
         String hora = sdf.format(new Date());
-        log("[" + hora + "] TX PLAINTEXT  > " + msg.toUpperCase(), GREEN_DIM);
-        log("[" + hora + "] TX ENCRYPTED  > " + cifrado, GREEN);
+        log("[" + hora + "] ->  >> " + msg.toUpperCase(), Verde_Normal);
+        log("[" + hora + "] -> ENCRYPTED  >> " + cifrado, Amarillo);
         inputMensaje.setText("");
 
-        // En modo ENVIAR cerramos tras mandar el mensaje
         if (modoSeleccionado.equals("ENVIAR")) {
             try {
-                log("─────────────────────────────────────────────", GREEN_DARK);
-                log("> MENSAJE ENVIADO. CONEXION CERRADA.", GREEN_DIM);
+                log("─────────────────────────────────────────────", Verde_Oscuro);
+                log("> MENSAJE ENVIADO. CONEXION CERRADA.", Verde_Normal);
                 socket.close();
                 setEstado("● OFFLINE");
             } catch (IOException ex) { /* ignorar */ }
         } else {
-            if (salida.checkError()) log("[ERROR] Fallo al enviar.", RED_ERR);
+            if (salida.checkError()) log("[ERROR] Fallo al enviar.", Rojo);
         }
     }
 
     // ── Helpers UI ────────────────────────────────────────────────────────────
     private void log(String texto, Color color) {
         SwingUtilities.invokeLater(() -> {
-            // Append con color usando HTML no funciona en JTextArea.
-            // Usamos JTextArea simple; el color lo controlamos globalmente.
-            // Para líneas de amigo (RX DECRYPTED) ponemos prefijo especial.
             pantalla.append(texto + "\n");
             pantalla.setCaretPosition(pantalla.getDocument().getLength());
         });
@@ -467,7 +467,7 @@ public class ChatTerminal extends JFrame {
     private void setEstado(String texto) {
         SwingUtilities.invokeLater(() -> {
             lblEstado.setText(texto);
-            lblEstado.setForeground(GREEN);
+            lblEstado.setForeground(Verde_Chinto);
         });
     }
 
@@ -478,8 +478,5 @@ public class ChatTerminal extends JFrame {
             inputMensaje.requestFocus();
         });
     }
-
-    // ── Integración con JFrame existente ──────────────────────────────────────
-    // Llama esto desde el botón en Jframe.java:
-    //   TCP.iniciarChatTerminal(m);
+;
 }
