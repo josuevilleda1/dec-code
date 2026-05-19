@@ -6,6 +6,8 @@ import java.io.*; // entrada y salida de informacion
 import java.net.*; // uso de sockets 
 import java.text.SimpleDateFormat; // para poder darle el frmato de hora que queremos
 import java.util.Date;// para tener la hora en que se mando los mensajes 
+// interfaz grafica implementada con ayuda de IA 
+// se uso para poder manejar bien la clase javax.swin 
 
 public class ChatTerminal extends JFrame {
 
@@ -45,17 +47,18 @@ public class ChatTerminal extends JFrame {
     private boolean           cursorVisible = true;
 
     public ChatTerminal(Matriz m) {
+        // cracion de las variables necesarias
         this.m = m;
         m.generarMatriz();
         m.crearAlfabeto();
         m.crearAlfabetoInverso();
         construirUI();
-        iniciarEfectoBoot();
+        iniciar();
     }
 
     // ── Construcción de UI ────────────────────────────────────────────────────
     private void construirUI() {
-        setTitle("[ CIPHER TERMINAL v1.0 ]");
+        setTitle("[ DECODIFICADOR ]");
         setSize(820, 620);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -68,7 +71,7 @@ public class ChatTerminal extends JFrame {
         header.setBackground(negro);
         header.setBorder(new EmptyBorder(10, 14, 6, 14));
 
-        JLabel titulo = new JLabel("[ HILL CIPHER SECURE TERMINAL ]");
+        JLabel titulo = new JLabel("[ CHATSITO SEGURO ]");
         titulo.setFont(new Font("Courier New", Font.BOLD, 16));
         titulo.setForeground(Verde_Chinto);
 
@@ -76,7 +79,7 @@ public class ChatTerminal extends JFrame {
         lblEstado.setFont(MONO_SM);
         lblEstado.setForeground(Rojo);
         lblEstado.setHorizontalAlignment(SwingConstants.RIGHT);
-
+// POSCION DE EL NOMBRE DEL CHAT Y DE ELE ESTADO DE CHAT 
         header.add(titulo,   BorderLayout.WEST);
         header.add(lblEstado, BorderLayout.EAST);
 
@@ -103,6 +106,7 @@ public class ChatTerminal extends JFrame {
         pantalla.setWrapStyleWord(false);
         pantalla.setBorder(new EmptyBorder(8, 12, 8, 12));
 
+        // NOS AYUDA A ESCROLLEAR EN LA PANTALLA SOLO SI FUESE NECESARIO 
         JScrollPane scroll = new JScrollPane(pantalla);
         scroll.setBackground(negro);
         scroll.setBorder(BorderFactory.createLineBorder(Verde_Oscuro, 1));
@@ -138,7 +142,7 @@ public class ChatTerminal extends JFrame {
         lblModo.setForeground(Verde_Normal);
         lblModo.setBounds(14, 10, 300, 22);
         p.add(lblModo);
-
+// CASO DONDE NO QUEREMOS USAR UN CHAT CONTINUO Y SOLO ES ENVIAR Y RECIBIR DATOS
         JButton btnModoChat    = hacerBoton("[ CHAT        ]", 14,  38, 190, 28);
         JButton btnModoEnviar  = hacerBoton("[ SOLO ENVIAR DATO ]", 214, 38, 190, 28);
         JButton btnModoRecibir = hacerBoton("[ SOLO RECIBIR DATO]", 414, 38, 190, 28);
@@ -151,12 +155,14 @@ public class ChatTerminal extends JFrame {
         btnModoChat.setBackground(Verde_Oscuro);
 
         btnModoChat.addActionListener(e -> {
+            // EN DADO CASO QUE QUERAMOS QUE SE SE EL CHAT CONSTATE 
             modoSeleccionado = "CHAT";
             btnModoChat.setForeground(Verde_Chinto);    btnModoChat.setBackground(Verde_Oscuro);
             btnModoEnviar.setForeground(Verde_Normal); btnModoEnviar.setBackground(negro);
             btnModoRecibir.setForeground(Verde_Normal); btnModoRecibir.setBackground(negro);
         });
         btnModoEnviar.addActionListener(e -> {
+            // SOLO RECIBIR DATO
             modoSeleccionado = "ENVIAR";
             btnModoEnviar.setForeground(Verde_Chinto);  btnModoEnviar.setBackground(Verde_Oscuro);
             btnModoChat.setForeground(Verde_Normal);   btnModoChat.setBackground(negro);
@@ -289,7 +295,7 @@ public class ChatTerminal extends JFrame {
     }
 
     // ── Efecto boot ───────────────────────────────────────────────────────────
-    private void iniciarEfectoBoot() {
+    private void iniciar() {
         String[] lineas = {
             "...INITIALIZING...",
             "CARGANDO DESENCRIPCION DE DATOS............[OK]",
@@ -358,7 +364,7 @@ public class ChatTerminal extends JFrame {
     private void ejecutarModo() {
         switch (modoSeleccionado) {
             case "CHAT"    -> { cambiarAChat(); iniciarHiloEscucha(); }
-            case "ENVIAR"  -> { cambiarAChat(); /* solo envía, no escucha */ }
+            case "ENVIAR"  -> { cambiarAChat();  }
             case "RECIBIR" -> modoSoloRecibir();
         }
     }
@@ -374,11 +380,11 @@ public class ChatTerminal extends JFrame {
                     while ((cifrado = entrada.readLine()) != null) {
                         String claro = m.decodificar(cifrado, m.matriz);
                         String hora  = sdf.format(new Date());
-                        log("[" + hora + "] RX ENCRYPTED  > " + cifrado, Verde_Oscuro);
-                        log("[" + hora + "] RX DECRYPTED  > " + (claro != null ? claro.trim() : "ERR"), Verde_Chinto);
+                        log("[" + hora + "] ENCRIPTADO  > " + cifrado, Verde_Oscuro);
+                        log("[" + hora + "] DESENCRIPTADO  > " + (claro != null ? claro.trim() : "ERR"), Verde_Chinto);
                     }
                 } catch (IOException e) {
-                    if (!socket.isClosed()) log("[WARN] CONEXION PERDIDA.", Rojo);
+                    if (!socket.isClosed()) log("CONEXION PERDIDA.", Rojo);
                 }
             }).start();
 
@@ -417,7 +423,7 @@ public class ChatTerminal extends JFrame {
     private void enviarMensaje() {
         if (!conectado) return;
         if (modoSeleccionado.equals("RECIBIR")) {
-            log("[WARN] Estas en modo RECIBIR. No puedes enviar.", Amarillo);
+            log("Estas en modo RECIBIR. No puedes enviar.", Amarillo);
             return;
         }
         String msg = inputMensaje.getText().trim();
@@ -428,7 +434,7 @@ public class ChatTerminal extends JFrame {
             try {
                 salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
             } catch (IOException e) {
-                log("[ERROR] No se pudo abrir stream: " + e.getMessage(), Rojo);
+                log(" No se pudo abrir stream: " + e.getMessage(), Rojo);
                 return;
             }
         }

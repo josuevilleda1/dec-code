@@ -5,7 +5,7 @@ import java.util.*;
 public class TCP {
 
     // ==================== UTILIDADES ====================
-
+// la IA ayudo en este metodo ya que no lograbamos tener el IP solo local host
     public static String obtenerIPReal() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -106,7 +106,7 @@ public class TCP {
         int PUERTO = 9999;
 
         System.out.println("================================");
-        System.out.println("   CHAT CIFRADO - HILL CIPHER  ");
+        System.out.println("   CHAT CIFRADO  ");
         System.out.println("================================");
         System.out.println("1. Recibir un mensaje cifrado");
         System.out.println("2. Enviar un mensaje cifrado");
